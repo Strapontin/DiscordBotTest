@@ -12,7 +12,7 @@ client = discord.Client()
 
 template = 'Team : \nTop : {0}\nJungle : {1}\nMid : {2}\nAdc : {3}\nSupport : {4}'
 
-async def manage_reaction(reaction):
+async def manage_reaction(message):
   reac_t = ''
   reac_j = ''
   reac_m = ''
@@ -22,27 +22,37 @@ async def manage_reaction(reaction):
   print('__')
 
   # For each reaction in our message
-  for reaction in reaction.message.reactions:
+  for reaction in message.reactions:
     async for user in reaction.users():
       if user != client.user:
         print(datetime.datetime.now(), user, reaction)
 
         if reaction.emoji == '🇹':
+          if reac_t != '':
+            reac_t += '/'
           reac_t += user.mention
+
         if reaction.emoji == '🇯':
+          if reac_j != '':
+            reac_j += '/'
           reac_j += user.mention
+
         if reaction.emoji == '🇲':
+          if reac_m != '':
+            reac_m += '/'
           reac_m += user.mention
+
         if reaction.emoji == '🇦':
+          if reac_a != '':
+            reac_a += '/'
           reac_a += user.mention
+
         if reaction.emoji == '🇸':
+          if reac_s != '':
+            reac_s += '/'
           reac_s += user.mention
 
   await reaction.message.edit(content=template.format(reac_t, reac_j, reac_m, reac_a, reac_s))
-
-  #print(await Reaction.users())
-  #print(Reaction.message.reactions)
-  #print(Reaction.message.author == client.user)
 
 
 @client.event
@@ -55,7 +65,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.channel.name == 'test' and (message.content == '!clash' or message.content == '!'):
+    if (message.channel.name == 'test' or message.channel.name == 'lol-clash') and message.content == '!clash':
     
       response = template.format('', '', '', '', '')
 
@@ -68,17 +78,22 @@ async def on_message(message):
       await msg.add_reaction('🇸')
 
       db["msg_id"] = msg.id
+      db["channel_id"] = msg.channel.id
 
 
 @client.event
 async def on_reaction_add(reaction, user):
-  await manage_reaction(reaction)
+  await manage_reaction(reaction.message)
 
 
 @client.event
 async def on_raw_reaction_remove(payload):
-  print('')
-  #if (payload.message_id == db["msg_id"]):
+  print(db['channel_id'])
+
+  channel = client.get_channel(db['channel_id'])
+  message = await channel.fetch_message(db['msg_id'])
+
+  await manage_reaction(message)
 
 
 client.run(TOKEN)
