@@ -1,4 +1,3 @@
-# bot.py
 import os
 import discord
 from dotenv import load_dotenv
@@ -78,10 +77,18 @@ async def on_message(message):
       db["channel_id"] = msg.channel.id
 
 
+#@client.event
+#async def on_reaction_add(reaction, user):
+#  if user != client.user:
+#    await manage_reaction(reaction.message)
+
+
 @client.event
-async def on_reaction_add(reaction, user):
-  if user != client.user:
-    await manage_reaction(reaction.message)
+async def on_raw_reaction_add(payload):
+  channel = client.get_channel(db['channel_id'])
+  message = await channel.fetch_message(db['msg_id'])
+
+  await manage_reaction(message)
 
 
 @client.event
